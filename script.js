@@ -81,6 +81,16 @@ animatables.forEach(selector => {
 });
 
 // ===========================
+// EMAILJS CONFIG
+// Fill these in from your EmailJS dashboard (emailjs.com)
+// ===========================
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+// ===========================
 // CONTACT FORM
 // ===========================
 const contactForm = document.getElementById('contactForm');
@@ -96,18 +106,21 @@ if (contactForm) {
 
     const data = Object.fromEntries(new FormData(contactForm).entries());
 
+    const templateParams = {
+      from_name:  `${data.firstName} ${data.lastName}`,
+      from_email: data.email,
+      phone:      data.phone || 'Not provided',
+      goal:       data.goal,
+      message:    data.message || 'No message provided',
+      reply_to:   data.email,
+    };
+
     try {
-      const res = await fetch('/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error();
-
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
       contactForm.style.display = 'none';
       formSuccess.classList.add('visible');
-    } catch {
+    } catch (err) {
+      console.error('EmailJS error:', err);
       btn.textContent = 'Book My Free Consultation';
       btn.disabled = false;
       alert('Something went wrong. Please try again or call us directly.');
