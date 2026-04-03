@@ -87,18 +87,31 @@ const contactForm = document.getElementById('contactForm');
 const formSuccess = document.getElementById('formSuccess');
 
 if (contactForm) {
-  contactForm.addEventListener('submit', function (e) {
+  contactForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const btn = contactForm.querySelector('button[type="submit"]');
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
-    // Simulate form submission (replace with real endpoint)
-    setTimeout(() => {
+    const data = Object.fromEntries(new FormData(contactForm).entries());
+
+    try {
+      const res = await fetch('/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error();
+
       contactForm.style.display = 'none';
       formSuccess.classList.add('visible');
-    }, 1200);
+    } catch {
+      btn.textContent = 'Book My Free Consultation';
+      btn.disabled = false;
+      alert('Something went wrong. Please try again or call us directly.');
+    }
   });
 }
 
